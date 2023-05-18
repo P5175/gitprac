@@ -13,3 +13,182 @@ Could not load type 'Npgsql.TypeMapping.NpgsqlTypeMapping' from assembly 'Npgsql
             };
             _db.Villas.Add(model);
 Feature 'target-typed object creation' is not available in C# 7.3. Please use language version 9.0 or greater
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.JsonPatch;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using WebApplication1.Data;
+using WebApplication1.Models;
+using WebApplication1.Models.Dto;
+using Microsoft.EntityFrameworkCore;
+
+namespace WebApplication1.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class VillaApiController:ControllerBase
+
+
+    {
+        private readonly ApplicationDbContext _db;
+
+
+
+        private readonly ILogger<VillaApiController> logger;
+        public VillaApiController(ILogger<VillaApiController> _logger, ApplicationDbContext db)
+        {
+            logger = _logger;
+            _db = db;
+        }
+
+        [HttpGet]
+        [ProducesResponseType(200)]
+        public ActionResult<IEnumerable<VillaDto>> GetVillas()
+        {
+            logger.LogInformation("getting all values");
+            return Ok(_db.Villas.ToList());
+        }
+        
+        [HttpGet("{id:int}",Name ="getvilla")]
+       
+        public ActionResult<VillaDto> GetVilla(int id)
+            
+        {
+            if (id == 0)
+            {
+                return BadRequest();
+             }
+            var villa=(_db.Villas.FirstOrDefault(u=>u.Id==id));
+            if (villa == null)
+            {
+                return NotFound();
+            }
+            return Ok(villa);
+        }
+
+        [HttpPost]
+        public ActionResult<VillaDto> CreateVilla(VillaDto villadto)
+
+        {
+            if (_db.Villas.FirstOrDefault(u => u.Name.ToLower() ==villadto.Name.ToLower()) !=null) {
+                ModelState.AddModelError("customerror", "villa already exists");
+                return BadRequest(ModelState);
+}
+            if (villadto == null)
+            {
+                return BadRequest(villadto);
+            }
+            if (villadto.Id > 0)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError); 
+            }
+            Villa model = new Villa()
+            {
+                Amenity = villadto.Amenity,
+                Details = villadto.Details,
+                Id = villadto.Id,
+                ImageUrl = villadto.ImageUrl,
+                Name = villadto.Name,
+                Occupancy = villadto.Occupancy,
+                Rate = villadto.Rate,
+                Sqft = villadto.Sqft,
+            };
+            _db.Villas.Add(model);
+            _db.SaveChanges();
+
+            
+            return CreatedAtRoute("getvilla",new { id=villadto.Id } ,villadto);
+        }
+
+        [HttpDelete("{id:int}",Name ="deletevilla")]
+        public ActionResult DeleteVilla(int id)
+
+        {
+            if (id == 0)
+            {
+                return BadRequest();
+            }
+           var villa= _db.Villas.FirstOrDefault(u => u.Id == id);
+
+            if (villa == null)
+            {
+                return NotFound();
+            }
+            _db.Villas.Remove(villa);
+
+            return NoContent();
+        }
+
+         [HttpPut("{id:int}", Name = "updatevilla")]
+         public ActionResult UpdateVilla(int id, [FromBody]VillaDto villadto)
+        {
+            if(villadto==null || id != villadto.Id)
+            {
+                return BadRequest();
+            }
+            Villa model = new Villa()
+            {
+                Amenity = villadto.Amenity,
+                Details = villadto.Details,
+                Id = villadto.Id,
+                ImageUrl = villadto.ImageUrl,
+                Name = villadto.Name,
+                Occupancy = villadto.Occupancy,
+                Rate = villadto.Rate,
+                Sqft = villadto.Sqft,
+            };
+            _db.Villas.Update(model);
+            _db.SaveChanges();
+            return NoContent();
+         }
+
+        [HttpPatch("{id:int}", Name = "UpdatepVilla")]
+        public IActionResult UpdatepVilla(int id, JsonPatchDocument<VillaDto> patchDto)
+        {
+            if(id==0|| patchDto == null)
+            {
+                return BadRequest();
+            }
+            var villa =_db.Villas.AsNoTracking().FirstOrDefault(u => u.Id == id);
+            VillaDto model = new VillaDto()
+            {
+                Amenity = villa.Amenity,
+                Details = villa.Details,
+                Id = villa.Id,
+                ImageUrl = villa.ImageUrl,
+                Name = villa.Name,
+                Occupancy = villa.Occupancy,
+                Rate = villa.Rate,
+                Sqft = villa.Sqft,
+            };
+          
+            if (villa == null)
+            {
+                return BadRequest();
+            }
+            patchDto.ApplyTo(model,ModelState);
+            Villa model1 = new Villa()
+            {
+                Amenity = model.Amenity,
+                Details = model.Details,
+                Id = model.Id,
+                ImageUrl = model.ImageUrl,
+                Name = model.Name,
+                Occupancy = model.Occupancy,
+                Rate = model.Rate,
+                Sqft = model.Sqft,
+            };
+            _db.Villas.Update(model1);
+            _db.SaveChanges();
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            return NoContent();
+        }
+    }
+}
