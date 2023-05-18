@@ -1,2 +1,15 @@
 Method 'Create' in type 'Npgsql.EntityFrameworkCore.PostgreSQL.Query.Internal.NpgsqlSqlTranslatingExpressionVisitorFactory' from assembly 'Npgsql.EntityFrameworkCore.PostgreSQL, Version=3.1.18.0, Culture=neutral, PublicKeyToken=5d8b90d52f46fda7' does not have an implementation.
 Could not load type 'Npgsql.TypeMapping.NpgsqlTypeMapping' from assembly 'Npgsql, Version=7.0.4.0, Culture=neutral, PublicKeyToken=5d8b90d52f46fda7'.
+ Villa model = new()
+            {
+                Amenity = villadto.Amenity,
+                Details = villadto.Details,
+                Id = villadto.Id,
+                ImageUrl = villadto.ImageUrl,
+                Name = villadto.Name,
+                Occupancy = villadto.Occupancy,
+                Rate = villadto.Rate,
+                Sqft = villadto.Sqft,
+            };
+            _db.Villas.Add(model);
+Feature 'target-typed object creation' is not available in C# 7.3. Please use language version 9.0 or greater
