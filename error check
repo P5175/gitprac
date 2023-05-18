@@ -192,3 +192,4 @@ namespace WebApplication1.Controllers
         }
     }
 }
+<input type="text" name="email" ngModel>
